@@ -1,0 +1,43 @@
+#!/usr/bin/env elixir
+#
+#Usage:
+# Create new day and get input: ./aoc -n [number of day]
+
+Mix.install([
+  {:req, "~> 0.5.0"}
+])
+
+defmodule AoC do
+
+  def new(args) do
+    if length(args) < 2 do
+      IO.puts("Not enough arguments")
+    else
+      num = Enum.at(args, 1)
+      name = "Day" <> String.pad_leading(num, 2, "0")
+      File.mkdir!(name)
+      File.touch!(name <> "/" <> String.downcase(name) <> ".exs")
+      File.touch!(name <> "/sample.txt")
+
+      if !File.exists?(name <> "/input.txt") do
+
+        sess = File.read!("session_token")
+        res = Req.get!("https://adventofcode.com/2025/day/" <> num <> "/input", headers: [
+          {"Cookie", "session=" <> sess},
+          {"User-Agent", "rune@ruune.de"}
+        ])
+
+        File.write!(name <> "/input.txt", res.body)
+      end
+
+      IO.puts("Successfully created " <> name)
+
+    end
+  end
+
+end
+
+case System.argv() |> Enum.at(0) do
+  "-n" -> AoC.new(System.argv())
+  _ -> IO.puts("Unknown option")
+end
